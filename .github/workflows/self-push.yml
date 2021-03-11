@@ -30,7 +30,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
-          pip uninstall torch
+          pip uninstall -y torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip uninstall tensorflow
+          pip uninstall -y tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -123,7 +123,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
-          pip uninstall torch
+          pip uninstall -y torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -166,7 +166,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip uninstall tensorflow
+          pip uninstall -y tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
