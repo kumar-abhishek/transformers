@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - ci_*
     paths:
       - "src/**"
       - "tests/**"
@@ -29,6 +30,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
+          pip uninstall torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -74,6 +76,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip uninstall tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -120,6 +123,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
+          pip uninstall torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -162,6 +166,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip uninstall tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -186,3 +191,18 @@ jobs:
         with:
           name: run_all_tests_tf_multi_gpu_test_reports
           path: reports
+
+  send_results:
+    name: Send results to webhook
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [run_tests_torch_gpu, run_tests_tf_gpu, run_tests_torch_multi_gpu, run_tests_tf_multi_gpu]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: reports
+
+      - name: Display structure of downloaded files
+        run: ls -R
