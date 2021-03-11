@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get -y update && sudo apt-get install -y libsndfile1-dev
+          apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
@@ -59,49 +59,49 @@ jobs:
           name: run_all_tests_torch_gpu_test_reports
           path: reports
 
-  run_tests_tf_gpu:
-    runs-on: [self-hosted, docker-gpu, single-gpu]
-    container:
-      image: tensorflow/tensorflow:2.4.1-gpu
-      options: --gpus all --shm-size "16gb" --ipc host -v /mnt/cache/.cache/huggingface:/mnt/cache/
-    steps:
-      - name: Launcher docker
-        uses: actions/checkout@v2
-
-      - name: NVIDIA-SMI
-        run: |
-          nvidia-smi
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install .[sklearn,testing,onnxruntime,sentencepiece]
-
-      - name: Are GPUs recognized by our DL frameworks
-        env:
-          CUDA_VISIBLE_DEVICES: 0
-        run: |
-          TF_CPP_MIN_LOG_LEVEL=3 python -c "import tensorflow as tf; print('TF GPUs available:', bool(tf.config.list_physical_devices('GPU')))"
-          TF_CPP_MIN_LOG_LEVEL=3 python -c "import tensorflow as tf; print('Number of TF GPUs available:', len(tf.config.list_physical_devices('GPU')))"
-
-      - name: Run all non-slow tests on GPU
-        env:
-          OMP_NUM_THREADS: 8
-          CUDA_VISIBLE_DEVICES: 0
-          HF_HOME: /mnt/cache
-        run: |
-          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_gpu tests
-
-      - name: Failure short reports
-        if: ${{ always() }}
-        run: cat reports/tests_tf_gpu_failures_short.txt
-
-      - name: Test suite reports artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: run_all_tests_tf_gpu_test_reports
-          path: reports
+#  run_tests_tf_gpu:
+#    runs-on: [self-hosted, docker-gpu, single-gpu]
+#    container:
+#      image: tensorflow/tensorflow:2.4.1-gpu
+#      options: --gpus all --shm-size "16gb" --ipc host -v /mnt/cache/.cache/huggingface:/mnt/cache/
+#    steps:
+#      - name: Launcher docker
+#        uses: actions/checkout@v2
+#
+#      - name: NVIDIA-SMI
+#        run: |
+#          nvidia-smi
+#
+#      - name: Install dependencies
+#        run: |
+#          pip install --upgrade pip
+#          pip install .[sklearn,testing,onnxruntime,sentencepiece]
+#
+#      - name: Are GPUs recognized by our DL frameworks
+#        env:
+#          CUDA_VISIBLE_DEVICES: 0
+#        run: |
+#          TF_CPP_MIN_LOG_LEVEL=3 python -c "import tensorflow as tf; print('TF GPUs available:', bool(tf.config.list_physical_devices('GPU')))"
+#          TF_CPP_MIN_LOG_LEVEL=3 python -c "import tensorflow as tf; print('Number of TF GPUs available:', len(tf.config.list_physical_devices('GPU')))"
+#
+#      - name: Run all non-slow tests on GPU
+#        env:
+#          OMP_NUM_THREADS: 8
+#          CUDA_VISIBLE_DEVICES: 0
+#          HF_HOME: /mnt/cache
+#        run: |
+#          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_gpu tests
+#
+#      - name: Failure short reports
+#        if: ${{ always() }}
+#        run: cat reports/tests_tf_gpu_failures_short.txt
+#
+#      - name: Test suite reports artifacts
+#        if: ${{ always() }}
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: run_all_tests_tf_gpu_test_reports
+#          path: reports
 
 
   run_tests_torch_multi_gpu:
@@ -119,7 +119,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get -y update && sudo apt-get install -y libsndfile1-dev
+          apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
