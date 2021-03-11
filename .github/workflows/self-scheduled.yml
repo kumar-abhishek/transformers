@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - multi_ci_*
+      - ci_*
   repository_dispatch:
   schedule:
     - cron: "0 0 * * *"
