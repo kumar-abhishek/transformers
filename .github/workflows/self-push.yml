@@ -30,7 +30,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
-          pip uninstall -y torch
+          pip uninstall torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -47,7 +47,7 @@ jobs:
           CUDA_VISIBLE_DEVICES: 0
           HF_HOME: /mnt/cache
         run: |
-          python -m pytest -n 2 --dist=loadfile --make-reports=tests_torch_gpu tests
+          python -m pytest -n 2 --dist=loadfile --make-reports=tests_torch_gpu tests/*roberta.py
 
       - name: Failure short reports
         if: ${{ always() }}
@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip uninstall -y tensorflow
+          pip uninstall tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -92,7 +92,7 @@ jobs:
           CUDA_VISIBLE_DEVICES: 0
           HF_HOME: /mnt/cache
         run: |
-          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_gpu tests
+          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_gpu tests/*roberta.py
 
       - name: Failure short reports
         if: ${{ always() }}
@@ -123,7 +123,7 @@ jobs:
         run: |
           apt -y update && apt install -y libsndfile1-dev
           pip install --upgrade pip
-          pip uninstall -y torch
+          pip uninstall torch
           pip install .[sklearn,testing,onnxruntime,sentencepiece,speech]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -137,7 +137,7 @@ jobs:
           OMP_NUM_THREADS: 8
           HF_HOME: /mnt/cache
         run: |
-          python -m pytest -n 2 --dist=loadfile --make-reports=tests_torch_multi_gpu tests
+          python -m pytest -n 2 --dist=loadfile --make-reports=tests_torch_multi_gpu tests/*roberta.py
 
       - name: Failure short reports
         if: ${{ always() }}
@@ -166,7 +166,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip uninstall -y tensorflow
+          pip uninstall tensorflow
           pip install .[sklearn,testing,onnxruntime,sentencepiece]
 
       - name: Are GPUs recognized by our DL frameworks
@@ -179,7 +179,7 @@ jobs:
           OMP_NUM_THREADS: 8
           HF_HOME: /mnt/cache
         run: |
-          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_multi_gpu tests
+          python -m pytest -n 2 --dist=loadfile --make-reports=tests_tf_multi_gpu tests/*roberta.py
 
       - name: Failure short reports
         if: ${{ always() }}
@@ -206,3 +206,4 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+        working-directory: path/to/artifact
