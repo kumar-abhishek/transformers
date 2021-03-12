@@ -184,6 +184,6 @@ if __name__ == "__main__":
         for result_key in test_results_keys:
             total[result_key] += job_result[result_key]
 
-    url = os.environ["CI_SLACK_WEBHOOK"]
+    url = os.environ["CI_SLACK_WEBHOOK_URL"]
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     r = requests.post(url, data=json.dumps(format_for_slack_with_failures(total, results)), headers=headers)
