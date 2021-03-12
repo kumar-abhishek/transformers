@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import json
-import sys
-import requests
 import os
+import sys
+
+import requests
 
 
 def handle_test_results(test_results):
@@ -23,7 +24,10 @@ def handle_test_results(test_results):
 
     failed = 0
     success = 0
-    time_spent = expressions[-2]
+
+    # When the output is short enough, the output is surrounded by = signs: "== OUTPUT =="
+    # When it is too long, those signs are not present.
+    time_spent = expressions[-2] if "=" in expressions[-1] else expressions[-1]
 
     for i, expression in enumerate(expressions):
         if "failed" in expression:
@@ -34,92 +38,69 @@ def handle_test_results(test_results):
     return failed, success, time_spent
 
 
-def format_for_slack_with_failures(total_results, results):
+def format_for_slack(total_results, results, scheduled: bool):
     print(results)
     header = {
         "type": "header",
         "text": {
             "type": "plain_text",
-            "text": "🤗 Results of the scheduled tests, March 11, 2021.",
-            "emoji": True
-        }
+            "text": "🤗 Results of the scheduled tests, March 11, 2021." if scheduled else "珞  Self-push results",
+            "emoji": True,
+        },
     }
 
-    total = {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*Failures:*\n❌ {total_results['failed']} failures."
-            },
-            {
-                "type": "mrkdwn",
-                "text": f"*Passed:*\n✅ {total_results['success']} tests passed."
-            },
-        ]
-    } if total_results['failed'] > 0 else {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*Congrats!*\nAll {total_results['success']} tests pass."
-            }
-        ]
-    }
+    total = (
+        {
+            "type": "section",
+            "fields": [
+                {"type": "mrkdwn", "text": f"*Failures:*\n❌ {total_results['failed']} failures."},
+                {"type": "mrkdwn", "text": f"*Passed:*\n✅ {total_results['success']} tests passed."},
+            ],
+        }
+        if total_results["failed"] > 0
+        else {
+            "type": "section",
+            "fields": [{"type": "mrkdwn", "text": f"*Congrats!*\nAll {total_results['success']} tests pass."}],
+        }
+    )
 
     blocks = [header, total]
 
-    if total_results['failed'] > 0:
+    if total_results["failed"] > 0:
         for key, result in results.items():
             print(key, result)
+            blocks.append({"type": "header", "text": {"type": "plain_text", "text": key, "emoji": True}})
             blocks.append(
                 {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": key,
-                        "emoji": True
-                    }
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Results:*\n{result['failed']} failed, {result['success']} passed.",
+                        },
+                        {"type": "mrkdwn", "text": f"*Time spent:*\n{result['time_spent']}"},
+                    ],
                 }
             )
-            blocks.append({
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Results:*\n{result['failed']} failed, {result['success']} passed."
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Time spent:*\n{result['time_spent']}"
-                    }
-                ]
-            })
     else:
         for key, result in results.items():
-            blocks.append({
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*{key}*\n{result['time_spent']}."
-                    }
-                ]
-            })
+            blocks.append(
+                {"type": "section", "fields": [{"type": "mrkdwn", "text": f"*{key}*\n{result['time_spent']}."}]}
+            )
 
     footer = {
         "type": "section",
         "text": {
             "type": "mrkdwn",
             "text": "<https://github.com/huggingface/transformers/actions/workflows/self-scheduled.yml|View on GitHub>"
-        }
+            if scheduled
+            else "<https://github.com/huggingface/transformers/actions/workflows/self-push.yml|View on GitHub>",
+        },
     }
 
     blocks.append(footer)
 
-    blocks = {
-        "blocks": blocks
-    }
+    blocks = {"blocks": blocks}
 
     return blocks
 
@@ -128,6 +109,7 @@ if __name__ == "__main__":
     scheduled = sys.argv[1] == "scheduled"
 
     if scheduled:
+        # The scheduled run has several artifacts for each job.
         file_paths = {
             "TF Single GPU": {
                 "common": "run_all_tests_tf_gpu_test_reports/tests_tf_gpu_stats.txt",
@@ -145,28 +127,25 @@ if __name__ == "__main__":
             "Torch Multi GPU": {
                 "common": "run_all_tests_torch_multi_gpu_test_reports/tests_torch_multi_gpu_stats.txt",
                 "pipeline": "run_all_tests_torch_multi_gpu_test_reports/tests_torch_pipeline_multi_gpu_stats.txt",
-            }
+            },
         }
     else:
         file_paths = {
-            "TF Single GPU": {
-                "common": "run_all_tests_tf_gpu_test_reports/tests_tf_gpu_stats.txt"
-            },
-            "Torch Single GPU": {
-                "common": "run_all_tests_torch_gpu_test_reports/tests_torch_gpu_stats.txt"
-            },
-            "TF Multi GPU": {
-                "common": "run_all_tests_tf_multi_gpu_test_reports/tests_tf_multi_gpu_stats.txt"
-            },
+            "TF Single GPU": {"common": "run_all_tests_tf_gpu_test_reports/tests_tf_gpu_stats.txt"},
+            "Torch Single GPU": {"common": "run_all_tests_torch_gpu_test_reports/tests_torch_gpu_stats.txt"},
+            "TF Multi GPU": {"common": "run_all_tests_tf_multi_gpu_test_reports/tests_tf_multi_gpu_stats.txt"},
             "Torch Multi GPU": {
                 "common": "run_all_tests_torch_multi_gpu_test_reports/tests_torch_multi_gpu_stats.txt"
-            }
+            },
         }
 
     try:
         results = {}
         for job, file_dict in file_paths.items():
+
+            # Single return value for failed/success across steps of a same job
             results[job] = {"failed": 0, "success": 0, "time_spent": ""}
+
             for key, file_path in file_dict.items():
                 with open(file_path) as f:
                     failed, success, time_spent = handle_test_results(f.read())
@@ -174,16 +153,20 @@ if __name__ == "__main__":
                     results[job]["success"] += success
                     results[job]["time_spent"] += time_spent[1:-1] + ", "
 
+            # Remove the trailing ", "
             results[job]["time_spent"] = results[job]["time_spent"][:-2]
-    except Exception as e:
-        print(f"Setup error: no artifacts were found. Error: {e}")
 
-    test_results_keys = ["failed", "success"]
-    total = {"failed": 0, "success": 0}
-    for job, job_result in results.items():
-        for result_key in test_results_keys:
-            total[result_key] += job_result[result_key]
+        test_results_keys = ["failed", "success"]
+        total = {"failed": 0, "success": 0}
+        for job, job_result in results.items():
+            for result_key in test_results_keys:
+                total[result_key] += job_result[result_key]
+
+        to_be_sent_to_slack = format_for_slack(total, results, scheduled)
+    except Exception as e:
+        # Voluntarily catch every exception and send it to Slack.
+        to_be_sent_to_slack = f"Setup error: no artifacts were found. Error: {e}"
 
     url = os.environ["CI_SLACK_WEBHOOK_URL"]
-    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-    r = requests.post(url, data=json.dumps(format_for_slack_with_failures(total, results)), headers=headers)
+    headers = {"content-type": "application/json", "Accept-Charset": "UTF-8"}
+    r = requests.post(url, data=json.dumps(), headers=headers)
