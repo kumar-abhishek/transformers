@@ -15,6 +15,7 @@
 import json
 import sys
 import requests
+import os
 
 
 def handle_test_results(test_results):
@@ -183,6 +184,6 @@ if __name__ == "__main__":
         for result_key in test_results_keys:
             total[result_key] += job_result[result_key]
 
-    url = 'https://hooks.slack.com/services/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'
+    url = os.environ["CI_SLACK_WEBHOOK"]
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     r = requests.post(url, data=json.dumps(format_for_slack_with_failures(total, results)), headers=headers)

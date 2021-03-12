@@ -201,5 +201,5 @@ jobs:
       - name: Display structure of downloaded files
         env:
           CI_SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
-          
+
         run: python utils/notification_service.py push
