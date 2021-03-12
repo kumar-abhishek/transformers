@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - multi_ci_*
-#      - ci_*
+      - ci_*
   repository_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -257,3 +257,19 @@ jobs:
         with:
           name: run_all_tests_tf_multi_gpu_test_reports
           path: reports
+
+  send_results:
+    name: Send results to webhook
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [run_all_tests_torch_gpu, run_all_tests_tf_gpu, run_all_tests_torch_multi_gpu, run_all_tests_tf_multi_gpu]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+
+      - name: Display structure of downloaded files
+        env:
+          CI_SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+
+        run: python utils/notification_service.py scheduled
