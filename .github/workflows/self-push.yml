@@ -199,4 +199,7 @@ jobs:
       - uses: actions/download-artifact@v2
 
       - name: Display structure of downloaded files
-        run: ls -R
+        env:
+          CI_SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+          
+        run: python utils/notification_service.py push
